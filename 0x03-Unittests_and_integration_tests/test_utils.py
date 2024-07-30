@@ -3,7 +3,6 @@
 Test module for utils module
 """
 
-
 import unittest
 from parameterized import parameterized
 from utils import access_nested_map, get_json, memoize
@@ -16,13 +15,11 @@ class TestAccessNestedMap(unittest.TestCase):
     Test access_nested_map function
     """
 
-    @parameterized.expand(
-        [
-            ({"a": 1}, ("a",), 1),
-            ({"a": {"b": 2}}, ("a",), {"b": 2}),
-            ({"a": {"b": 2}}, ("a", "b"), 2),
-        ]
-    )
+    @parameterized.expand([
+        ({"a": 1}, ("a",), 1),
+        ({"a": {"b": 2}}, ("a",), {"b": 2}),
+        ({"a": {"b": 2}}, ("a", "b"), 2),
+    ])
     def test_access_nested_map(
         self, nested_map: Dict[str, Any], path: Tuple[str], expected: Any
     ) -> None:
@@ -31,15 +28,22 @@ class TestAccessNestedMap(unittest.TestCase):
         """
         self.assertEqual(access_nested_map(nested_map, path), expected)
 
-    @parameterized.expand([({}, ("a",)), ({"a": 1}, ("a", "b"))])
-    def test_access_nested_map_exception(
-        self, nested_map: Dict[str, Any], path: Tuple[str]
-    ) -> None:
+    @parameterized.expand([
+        ({}, ("a",), KeyError, 'a'),
+        ({"a": 1}, ("a", "b"), KeyError, 'b')
+    ])
+    def test_access_nested_map_exception(self,
+                                         nested_map: Dict[str,
+                                                          Any],
+                                         path: Tuple[str],
+                                         expected_exception: Exception,
+                                         expected_message: str) -> None:
         """
         Test that access_nested_map raises a KeyError
         """
-        with self.assertRaises(KeyError):
+        with self.assertRaises(expected_exception) as cm:
             access_nested_map(nested_map, path)
+        self.assertEqual(str(cm.exception), expected_message)
 
 
 class TestGetJson(unittest.TestCase):
@@ -47,12 +51,10 @@ class TestGetJson(unittest.TestCase):
     Test get_json function
     """
 
-    @parameterized.expand(
-        [
-            ("http://example.com", {"payload": True}),
-            ("http://holberton.io", {"payload": False}),
-        ]
-    )
+    @parameterized.expand([
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
+    ])
     @patch("requests.get")
     def test_get_json(
         self, test_url: str, test_payload: Dict[str, Any], mock_get: Mock
